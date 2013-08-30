@@ -674,8 +674,6 @@ tr_setup:
 			pc = usbd_xfer_get_frame(xfer, nframes);
 			txhdr = m->m_pkthdr.len & 0x000007FFUL;
 			txhdr = htole32(txhdr);
-			txhdr = m->m_pkthdr.len & 0x000007FFUL;
-			txhdr = htole32(txhdr);
 			usbd_copy_in(pc, 4, &txhdr, sizeof(txhdr));
 
 			frm_len += 8;

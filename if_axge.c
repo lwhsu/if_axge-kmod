@@ -133,13 +133,13 @@ static void	axge_csum_cfg(struct usb_ether *);
 
 #define	AXGE_CSUM_FEATURES	(CSUM_IP | CSUM_TCP | CSUM_UDP)
 
-#ifdef USB_DEBUG
+//#ifdef USB_DEBUG
 static int axge_debug = 0;
 
 static SYSCTL_NODE(_hw_usb, OID_AUTO, axge, CTLFLAG_RW, 0, "USB axge");
 SYSCTL_INT(_hw_usb_axge, OID_AUTO, debug, CTLFLAG_RW, &axge_debug, 0,
     "Debug level");
-#endif
+//#endif
 
 static const struct usb_config axge_config[AXGE_N_TRANSFER] = {
 	[AXGE_BULK_DT_WR] = {
@@ -649,6 +649,7 @@ axge_bulk_write_callback(struct usb_xfer *xfer, usb_error_t error)
 
 	sc = usbd_xfer_softc(xfer);
 	ifp = uether_getifp(&sc->sc_ue);
+
 	switch (USB_GET_STATE(xfer)) {
 	case USB_ST_TRANSFERRED:
 		ifp->if_drv_flags &= ~IFF_DRV_OACTIVE;
@@ -672,22 +673,24 @@ tr_setup:
 			usbd_xfer_set_frame_offset(xfer, nframes * MCLBYTES,
 				nframes);
 			pc = usbd_xfer_get_frame(xfer, nframes);
-			txhdr = m->m_pkthdr.len & 0x000007FFUL;
-			txhdr = htole32(txhdr);
-			usbd_copy_in(pc, 4, &txhdr, sizeof(txhdr));
 
-			frm_len += 8;
+			txhdr = m->m_pkthdr.len;
+			txhdr = htole32(txhdr);
+			usbd_copy_in(pc, 0, &txhdr, sizeof(txhdr));
+			frm_len += sizeof(txhdr);
+
+			txhdr2 = 0;
+			// 512 is frame size (usb highspeed)
+			if (((m->m_pkthdr.len + sizeof(txhdr) + sizeof(txhdr2)) % 512) == 0) {
+				txhdr2 |= 0x80008000;
+			}
+			txhdr2 = htole32(txhdr2);
+			usbd_copy_in(pc, frm_len, &txhdr2, sizeof(txhdr2));
+			frm_len += sizeof(txhdr2);
 
 			/* Next copy in the actual packet. */
 			usbd_m_copy_in(pc, frm_len, m, 0, m->m_pkthdr.len);
 			frm_len += m->m_pkthdr.len;
-			if (((frm_len + 8) % 512) == 0) {
-				txhdr2 |= 0x80008000;
-				txhdr2 = htole32(txhdr2);
-				usbd_copy_in(pc, frm_len, &txhdr2,
-					sizeof(txhdr2));
-				frm_len += sizeof(txhdr2);
-			}
 
 			/*
 			 * XXX

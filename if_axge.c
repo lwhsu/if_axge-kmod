@@ -610,7 +610,6 @@ axge_bulk_read_callback(struct usb_xfer *xfer, usb_error_t error)
 	sc = usbd_xfer_softc(xfer);
 	ue = &sc->sc_ue;
 	usbd_xfer_status(xfer, &actlen, NULL, NULL, NULL);
-	device_printf(sc->sc_ue.ue_dev, "rx : actlen %d\n", actlen);
 
 	switch (USB_GET_STATE(xfer)) {
 	case USB_ST_TRANSFERRED:

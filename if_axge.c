@@ -148,7 +148,7 @@ static const struct usb_config axge_config[AXGE_N_TRANSFER] = {
 		.direction = UE_DIR_OUT,
 		.frames = 16,
 		.bufsize = 16 * (MCLBYTES + 16),
-		.flags = {.pipe_bof = 1,},
+		.flags = {.pipe_bof = 1,.force_short_xfer = 1,},
 		.callback = axge_bulk_write_callback,
 		.timeout = 10000,	/* 10 seconds */
 	},
@@ -434,7 +434,7 @@ static void
 axge_attach_post(struct usb_ether *ue)
 {
 	struct axge_softc *sc;
-//	uint8_t tmp[5];
+	uint8_t tmp[5];
 
 	sc = uether_getsc(ue);
 	sc->sc_phyno = 3;
@@ -442,8 +442,8 @@ axge_attach_post(struct usb_ether *ue)
 	/* Initialize controller and get station address. */
 	axge_chip_init(sc);
 
-//	memcpy(tmp, &AX88179_BULKIN_SIZE[0], 5);
-//	axge_read_mem(sc, AXGE_ACCESS_MAC, 5, AXGE_RX_BULKIN_QCTRL, tmp, 5);
+	memcpy(tmp, &AX88179_BULKIN_SIZE[0], 5);
+	axge_read_mem(sc, AXGE_ACCESS_MAC, 5, AXGE_RX_BULKIN_QCTRL, tmp, 5);
 	axge_read_mem(sc, AXGE_ACCESS_MAC, ETHER_ADDR_LEN, AXGE_NODE_ID,
 	    ue->ue_eaddr, ETHER_ADDR_LEN);
 }

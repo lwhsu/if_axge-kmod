@@ -127,8 +127,8 @@ static int	axge_ifmedia_upd(struct ifnet *);
 static void	axge_ifmedia_sts(struct ifnet *, struct ifmediareq *);
 static int	axge_ioctl(struct ifnet *, u_long, caddr_t);
 static int	axge_rx_frame(struct usb_ether *, struct usb_page_cache *, int);
-//static int	axge_rxeof(struct usb_ether *, struct usb_page_cache *,
-//		    unsigned int, unsigned int, uint32_t);
+static int	axge_rxeof(struct usb_ether *, struct usb_page_cache *,
+		    unsigned int, unsigned int, struct axge_csum_hdr *);
 static void	axge_csum_cfg(struct usb_ether *);
 
 #define	AXGE_CSUM_FEATURES	(CSUM_IP | CSUM_TCP | CSUM_UDP)
@@ -848,9 +848,9 @@ axge_init(struct usb_ether *ue)
 	axge_write_mem(sc, AXGE_ACCESS_MAC, ETHER_ADDR_LEN, AXGE_NODE_ID,
 	    IF_LLADDR(ifp), ETHER_ADDR_LEN);
 
-//	axge_write_cmd_1(sc, AXGE_ACCESS_MAC, 1, AXGE_PAUSE_WATERLVL_LOW, 0x34);
-//	axge_write_cmd_1(sc, AXGE_ACCESS_MAC, 1, AXGE_PAUSE_WATERLVL_HIGH,
-//	    0x52);
+	axge_write_cmd_1(sc, AXGE_ACCESS_MAC, 1, AXGE_PAUSE_WATERLVL_LOW, 0x34);
+	axge_write_cmd_1(sc, AXGE_ACCESS_MAC, 1, AXGE_PAUSE_WATERLVL_HIGH,
+	    0x52);
 
 	/* Configure TX/RX checksum offloading. */
 	axge_csum_cfg(ue);
@@ -945,11 +945,11 @@ static int
 axge_rx_frame(struct usb_ether *ue, struct usb_page_cache *pc, int actlen)
 {
 	struct axge_softc *sc;
+	struct axge_csum_hdr csum_hdr;
 	int error, len, pos;
 	int pkt_cnt;
 	uint32_t rxhdr;
 	uint16_t hdr_off;
-	uint32_t pkt_hdr;
 	uint16_t pktlen;
 
 	sc = uether_getsc(ue);
@@ -957,33 +957,26 @@ axge_rx_frame(struct usb_ether *ue, struct usb_page_cache *pc, int actlen)
 	len = 0;
 	error = 0;
 
-	if (actlen <= (int)(sizeof(rxhdr) + ETHER_CRC_LEN)) {
-		ue->ue_ifp->if_ierrors++;
-		return (EINVAL);
-	}
-
 	usbd_copy_out(pc, actlen - sizeof(rxhdr), &rxhdr, sizeof(rxhdr));
+	actlen -= sizeof(rxhdr);
 	rxhdr = le32toh(rxhdr);
 
 	pkt_cnt = (uint16_t)rxhdr;
 	hdr_off = (uint16_t)(rxhdr >> 16);
 
-	usbd_copy_out(pc, hdr_off, &pkt_hdr, sizeof(pkt_hdr));
+	usbd_copy_out(pc, pos + hdr_off, &csum_hdr, sizeof(csum_hdr));
+	csum_hdr.len = le16toh(csum_hdr.len);
+	csum_hdr.cstatus = le16toh(csum_hdr.cstatus);
 
 	while (pkt_cnt--) {
-		pktlen = (pkt_hdr >> 16) & 0x1fff;
-
-		if ((pkt_hdr & AXGE_RXHDR_CRC_ERR) ||
-		    (pkt_hdr & AXGE_RXHDR_DROP_ERR)) {
-			ue->ue_ifp->if_ierrors++;
-			continue;
+		if (actlen <= (int)(4 + sizeof(struct ether_header))) {
+			error = EINVAL;
+			break;
 		}
+		pktlen = AXGE_CSUM_RXBYTES(csum_hdr.len);
 
-		if (pkt_cnt == 0) 
-			uether_rxbuf(ue, pc, 2, pktlen);
-
-
-		actlen -= sizeof(rxhdr);
+		if (pkt_cnt == 0)
+			axge_rxeof(ue, pc, 2, pktlen, &csum_hdr);
 	}
 
 	if (error != 0)
@@ -991,10 +984,9 @@ axge_rx_frame(struct usb_ether *ue, struct usb_page_cache *pc, int actlen)
 	return (error);
 }
 
-#if 0
 static int
 axge_rxeof(struct usb_ether *ue, struct usb_page_cache *pc,
-    unsigned int offset, unsigned int len, uint32_t pkt_hdr)
+    unsigned int offset, unsigned int len, struct axge_csum_hdr *csum_hdr)
 {
 	struct ifnet *ifp;
 	struct mbuf *m;
@@ -1019,31 +1011,26 @@ axge_rxeof(struct usb_ether *ue, struct usb_page_cache *pc,
 	m->m_pkthdr.rcvif = ifp;
 	m->m_pkthdr.len = m->m_len = len;
 
-//	if (pkt_hdr & AXGE_CSUM_HDR_L3_TYPE_IPV4) {
-		if ((pkt_hdr & (AXGE_RXHDR_L3CSUM_ERR |
+	if (csum_hdr != NULL &&
+	    csum_hdr->cstatus & AXGE_CSUM_HDR_L3_TYPE_IPV4) {
+		if ((csum_hdr->cstatus & (AXGE_CSUM_HDR_L4_CSUM_ERR |
 		    AXGE_RXHDR_L4CSUM_ERR)) == 0) {
 			m->m_pkthdr.csum_flags |= CSUM_IP_CHECKED |
 			    CSUM_IP_VALID;
-			if ((pkt_hdr & AXGE_RXHDR_L4_TYPE_MASK) ==
-			    AXGE_RXHDR_L4_TYPE_TCP ||
-			    (pkt_hdr & AXGE_RXHDR_L4_TYPE_MASK) ==
-			    AXGE_RXHDR_L4_TYPE_UDP) {
+			if ((csum_hdr->cstatus & AXGE_CSUM_HDR_L4_TYPE_MASK) ==
+			    AXGE_CSUM_HDR_L4_TYPE_TCP ||
+			    (csum_hdr->cstatus & AXGE_CSUM_HDR_L4_TYPE_MASK) ==
+			    AXGE_CSUM_HDR_L4_TYPE_UDP) {
 				m->m_pkthdr.csum_flags |=
 				    CSUM_DATA_VALID | CSUM_PSEUDO_HDR;
 				m->m_pkthdr.csum_data = 0xffff;
 			}
 		}
-//	}
-	m->m_pkthdr.csum_flags |= CSUM_IP_CHECKED |
-			    CSUM_IP_VALID;
-	m->m_pkthdr.csum_flags |=
-	    CSUM_DATA_VALID | CSUM_PSEUDO_HDR;
-	m->m_pkthdr.csum_data = 0xffff;
+	}
 
 	_IF_ENQUEUE(&ue->ue_rxq, m);
 	return (0);
 }
-#endif
 
 static void
 axge_csum_cfg(struct usb_ether *ue)

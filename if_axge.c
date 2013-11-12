@@ -648,7 +648,7 @@ axge_bulk_write_callback(struct usb_xfer *xfer, usb_error_t error)
 	uint32_t txhdr;
 	uint32_t txhdr2;
 	int nframes;
-	int frm_len = 0;
+	int frm_len;
 
 	sc = usbd_xfer_softc(xfer);
 	ifp = uether_getifp(&sc->sc_ue);
@@ -675,6 +675,7 @@ tr_setup:
 				break;
 			usbd_xfer_set_frame_offset(xfer, nframes * MCLBYTES,
 				nframes);
+			frm_len = 0;
 			pc = usbd_xfer_get_frame(xfer, nframes);
 
 			txhdr = m->m_pkthdr.len;
@@ -683,8 +684,8 @@ tr_setup:
 			frm_len += sizeof(txhdr);
 
 			txhdr2 = 0;
-			// 512 is frame size (usb highspeed)
-			if (((m->m_pkthdr.len + sizeof(txhdr) + sizeof(txhdr2)) % 512) == 0) {
+			if ((m->m_pkthdr.len + sizeof(txhdr) + sizeof(txhdr2)) %
+			    usbd_xfer_max_framelen(xfer) == 0) {
 				txhdr2 |= 0x80008000;
 			}
 			txhdr2 = htole32(txhdr2);

@@ -53,6 +53,7 @@ __FBSDID("$FreeBSD$");
 #include <sys/priv.h>
 
 #include <net/if.h>
+#include <net/if_var.h>
 #include <net/ifq.h>
 
 #include <dev/usb/usb.h>

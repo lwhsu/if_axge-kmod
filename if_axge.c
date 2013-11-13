@@ -975,14 +975,15 @@ axge_rx_frame(struct usb_ether *ue, struct usb_page_cache *pc, int actlen)
 	csum_hdr.cstatus = le16toh(csum_hdr.cstatus);
 
 	while (pkt_cnt--) {
-		if (actlen <= (int)(4 + sizeof(struct ether_header))) {
+		if (actlen <= sizeof(csum_hdr) + sizeof(struct ether_header)) {
 			error = EINVAL;
 			break;
 		}
 		pktlen = AXGE_CSUM_RXBYTES(csum_hdr.len);
 
 		if (pkt_cnt == 0)
-			axge_rxeof(ue, pc, 2, pktlen, &csum_hdr);
+			/* Skip the 2-byte IP alignment header. */
+			axge_rxeof(ue, pc, 2, pktlen - 2, &csum_hdr);
 	}
 
 	if (error != 0)

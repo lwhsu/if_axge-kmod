@@ -104,16 +104,12 @@ static int	axge_read_mem(struct axge_softc *, uint8_t, uint16_t,
 		    uint16_t, void *, int);
 static void	axge_write_mem(struct axge_softc *, uint8_t, uint16_t,
 		    uint16_t, void *, int);
-//static uint8_t	axge_read_cmd_1(struct axge_softc *, uint8_t, uint16_t,
-//		    uint16_t);
 static uint16_t	axge_read_cmd_2(struct axge_softc *, uint8_t, uint16_t,
 		    uint16_t);
 static void	axge_write_cmd_1(struct axge_softc *, uint8_t, uint16_t,
 		    uint16_t, uint8_t);
 static void	axge_write_cmd_2(struct axge_softc *, uint8_t, uint16_t,
 		    uint16_t, uint16_t);
-//static void	axge_write_cmd_4(struct axge_softc *, uint8_t, uint16_t,
-//		    int, uint32_t);
 static void	axge_chip_init(struct axge_softc *);
 static void	axge_reset(struct axge_softc *);
 
@@ -128,13 +124,13 @@ static void	axge_csum_cfg(struct usb_ether *);
 
 #define	AXGE_CSUM_FEATURES	(CSUM_IP | CSUM_TCP | CSUM_UDP)
 
-//#ifdef USB_DEBUG
+#ifdef USB_DEBUG
 static int axge_debug = 0;
 
 static SYSCTL_NODE(_hw_usb, OID_AUTO, axge, CTLFLAG_RW, 0, "USB axge");
 SYSCTL_INT(_hw_usb_axge, OID_AUTO, debug, CTLFLAG_RW, &axge_debug, 0,
     "Debug level");
-//#endif
+#endif
 
 static const struct usb_config axge_config[AXGE_N_TRANSFER] = {
 	[AXGE_BULK_DT_WR] = {
@@ -237,18 +233,6 @@ axge_write_mem(struct axge_softc *sc, uint8_t cmd, uint16_t index,
 	}
 }
 
-#if 0
-static uint8_t
-axge_read_cmd_1(struct axge_softc *sc, uint8_t cmd, uint16_t index,
-    uint16_t reg)
-{
-	uint8_t val;
-
-	axge_read_mem(sc, cmd, index, reg, &val, 1);
-	return (val);
-}
-#endif
-
 static uint16_t
 axge_read_cmd_2(struct axge_softc *sc, uint8_t cmd, uint16_t index,
     uint16_t reg)
@@ -275,18 +259,6 @@ axge_write_cmd_2(struct axge_softc *sc, uint8_t cmd, uint16_t index,
 	USETW(temp, val);
 	axge_write_mem(sc, cmd, index, reg, &temp, 2);
 }
-
-#if 0
-static void
-axge_write_cmd_4(struct axge_softc *sc, uint8_t cmd, uint16_t index, int reg,
-    uint32_t val)
-{
-	uint8_t temp[4];
-
-	USETDW(temp, val);
-	axge_write_mem(sc, cmd, index, reg, &temp, 4);
-}
-#endif
 
 static int
 axge_miibus_readreg(device_t dev, int phy, int reg)
@@ -771,8 +743,7 @@ axge_setmulti(struct usb_ether *ue)
 	rxmode &= ~AXGE_RX_CTL_AMALL;
 
 	if_maddr_rlock(ifp);
-	TAILQ_FOREACH(ifma, &ifp->if_multiaddrs, ifma_link)
-	{
+	TAILQ_FOREACH(ifma, &ifp->if_multiaddrs, ifma_link) {
 		if (ifma->ifma_addr->sa_family != AF_LINK)
 			continue;
 		h = ether_crc32_be(LLADDR((struct sockaddr_dl *)
@@ -805,7 +776,7 @@ axge_setpromisc(struct usb_ether *ue)
 	axge_write_cmd_2(sc, AXGE_ACCESS_MAC, 2, AXGE_RX_CTL, rxmode);
 	axge_setmulti(ue);
 }
-    
+
 static void
 axge_start(struct usb_ether *ue)
 {

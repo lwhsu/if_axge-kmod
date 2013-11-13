@@ -33,7 +33,7 @@
 #define	AXGE_RX_CHECKSUM		1
 #define	AXGE_TX_CHECKSUM		2
 
-#define	AXGE_BULKIN_24K			0x18;	/* 24k */
+#define	AXGE_BULKIN_24K			0x18	/* 24k */
 
 #define	AXGE_ACCESS_MAC			0x01
 #define	AXGE_ACCESS_PHY			0x02
@@ -152,163 +152,27 @@
 #define	AXGE_EEP_EFUSE_CORRECT		0x00
 #define	AX88179_EEPROM_MAGIC		0x17900b95
 
-/*****************************************************************************/
-/* GMII register definitions */
-#define	GMII_PHY_CONTROL		0x00	/* control reg */
-/* Bit definitions: GMII Control */
-#define	GMII_CONTROL_RESET		0x8000	/* reset bit in control reg */
-#define	GMII_CONTROL_LOOPBACK		0x4000	/* loopback bit in control reg */
-#define	GMII_CONTROL_10MB		0x0000	/* 10 Mbit */
-#define	GMII_CONTROL_100MB		0x2000	/* 100Mbit */
-#define	GMII_CONTROL_1000MB		0x0040	/* 1000Mbit */
-#define	GMII_CONTROL_SPEED_BITS		0x2040	/* speed bit mask */
-#define	GMII_CONTROL_ENABLE_AUTO	0x1000	/* autonegotiate enable */
-#define	GMII_CONTROL_POWER_DOWN		0x0800
-#define	GMII_CONTROL_ISOLATE		0x0400	/* islolate bit */
-#define	GMII_CONTROL_START_AUTO		0x0200	/* restart autonegotiate */
-#define	GMII_CONTROL_FULL_DUPLEX	0x0100
+#define	AXGE_CONFIG_IDX			0	/* config number 1 */
+#define	AXGE_IFACE_IDX			0
 
-#define	GMII_PHY_STATUS			0x01	/* status reg */
-/* Bit definitions: GMII Status */
-#define	GMII_STATUS_100MB_MASK		0xE000	/* any of these indicate 100 Mbit */
-#define	GMII_STATUS_10MB_MASK		0x1800	/* either of these indicate 10 Mbit */
-#define	GMII_STATUS_AUTO_DONE		0x0020	/* auto negotiation complete */
-#define	GMII_STATUS_AUTO		0x0008	/* auto negotiation is available */
-#define	GMII_STATUS_LINK_UP		0x0004	/* link status bit */
-#define	GMII_STATUS_EXTENDED		0x0001	/* extended regs exist */
-#define	GMII_STATUS_100T4		0x8000	/* capable of 100BT4 */
-#define	GMII_STATUS_100TXFD		0x4000	/* capable of 100BTX full duplex */
-#define	GMII_STATUS_100TX		0x2000	/* capable of 100BTX */
-#define	GMII_STATUS_10TFD		0x1000	/* capable of 10BT full duplex */
-#define	GMII_STATUS_10T			0x0800	/* capable of 10BT */
+#define	AXGE_RXHDR_CRC_ERR		0x80000000
+#define	AXGE_RXHDR_L4_ERR		(1 << 8)
+#define	AXGE_RXHDR_L3_ERR		(1 << 9)
 
-#define	GMII_PHY_OUI			0x02	/* most of the OUI bits */
-#define	GMII_PHY_MODEL			0x03	/* model/rev bits, and rest of OUI */
-#define	GMII_PHY_ANAR			0x04	/* AN advertisement reg */
-/* Bit definitions: Auto-Negotiation Advertisement */
-#define	GMII_ANAR_ASYM_PAUSE		0x0800	/* support asymetric pause */
-#define	GMII_ANAR_PAUSE			0x0400	/* support pause packets */
-#define	GMII_ANAR_100T4			0x0200	/* support 100BT4 */
-#define	GMII_ANAR_100TXFD		0x0100	/* support 100BTX full duplex */
-#define	GMII_ANAR_100TX			0x0080	/* support 100BTX half duplex */
-#define	GMII_ANAR_10TFD			0x0040	/* support 10BT full duplex */
-#define	GMII_ANAR_10T			0x0020	/* support 10BT half duplex */
-#define	GMII_SELECTOR_FIELD		0x001F	/* selector field. */
+#define	AXGE_RXHDR_L4_TYPE_ICMP		2
+#define	AXGE_RXHDR_L4_TYPE_IGMP		3
+#define	AXGE_RXHDR_L4_TYPE_TCMPV6	5
 
-#define	GMII_PHY_ANLPAR			0x05	/* AN Link Partner */
-/* Bit definitions: Auto-Negotiation Link Partner Ability */
-#define	GMII_ANLPAR_100T4		0x0200	/* support 100BT4 */
-#define	GMII_ANLPAR_100TXFD		0x0100	/* support 100BTX full duplex */
-#define	GMII_ANLPAR_100TX		0x0080	/* support 100BTX half duplex */
-#define	GMII_ANLPAR_10TFD		0x0040	/* support 10BT full duplex */
-#define	GMII_ANLPAR_10T			0x0020	/* support 10BT half duplex */
-#define	GMII_ANLPAR_PAUSE		0x0400	/* support pause packets */
-#define	GMII_ANLPAR_ASYM_PAUSE		0x0800	/* support asymetric pause */
-#define	GMII_ANLPAR_ACK			0x4000	/* means LCB was successfully rx'd */
-#define	GMII_SELECTOR_8023		0x0001;
+#define	AXGE_RXHDR_L3_TYPE_IP		1
+#define	AXGE_RXHDR_L3_TYPE_IPV6		2
 
-#define	GMII_PHY_ANER			0x06	/* AN expansion reg */
-#define	GMII_PHY_1000BT_CONTROL		0x09	/* control reg for 1000BT */
-#define	GMII_PHY_1000BT_STATUS		0x0A	/* status reg for 1000BT */
-
-#define	GMII_PHY_PHYSR			0x11	/* PHY specific status register */
-#define	GMII_PHY_PHYSR_SMASK		0xc000
-#define	GMII_PHY_PHYSR_GIGA		0x8000
-#define	GMII_PHY_PHYSR_100		0x4000
-#define	GMII_PHY_PHYSR_FULL		0x2000
-#define	GMII_PHY_PHYSR_LINK		0x400
-
-/* Bit definitions: 1000BaseT AUX Control */
-#define	GMII_1000_AUX_CTRL_MASTER_SLAVE	0x1000
-#define	GMII_1000_AUX_CTRL_FD_CAPABLE	0x0200	/* full duplex capable */
-#define	GMII_1000_AUX_CTRL_HD_CAPABLE	0x0100	/* half duplex capable */
-
-/* Bit definitions: 1000BaseT AUX Status */
-#define	GMII_1000_AUX_STATUS_FD_CAPABLE	0x0800	/* full duplex capable */
-#define	GMII_1000_AUX_STATUS_HD_CAPABLE	0x0400	/* half duplex capable */
-
-/*Cicada MII Registers */
-#define	GMII_AUX_CTRL_STATUS		0x1C
-#define	GMII_AUX_ANEG_CPLT		0x8000
-#define	GMII_AUX_FDX			0x0020
-#define	GMII_AUX_SPEED_1000		0x0010
-#define	GMII_AUX_SPEED_100		0x0008
-
-#define	GMII_LED_ACTIVE			0x1a
-#define	GMII_LED_ACTIVE_MASK		0xff8f
-#define	GMII_LED0_ACTIVE		(1 << 4)
-#define	GMII_LED1_ACTIVE		(1 << 5)
-#define	GMII_LED2_ACTIVE		(1 << 6)
-
-#define	GMII_LED_LINK			0x1c
-#define	GMII_LED_LINK_MASK		0xf888
-#define	GMII_LED0_LINK_10		(1 << 0)
-#define	GMII_LED0_LINK_100		(1 << 1)
-#define	GMII_LED0_LINK_1000		(1 << 2)
-#define	GMII_LED1_LINK_10		(1 << 4)
-#define	GMII_LED1_LINK_100		(1 << 5)
-#define	GMII_LED1_LINK_1000		(1 << 6)
-#define	GMII_LED2_LINK_10		(1 << 8)
-#define	GMII_LED2_LINK_100		(1 << 9)
-#define	GMII_LED2_LINK_1000		(1 << 10)
-
-#define	LED_VALID	(1 << 15) /* UA2 LED Setting */
-
-#define	LED0_ACTIVE	(1 << 0)
-#define	LED0_LINK_10	(1 << 1)
-#define	LED0_LINK_100	(1 << 2)
-#define	LED0_LINK_1000	(1 << 3)
-#define	LED0_FD		(1 << 4)
-#define	LED0_USB3_MASK	0x001f
-
-#define	LED1_ACTIVE	(1 << 5)
-#define	LED1_LINK_10	(1 << 6)
-#define	LED1_LINK_100	(1 << 7)
-#define	LED1_LINK_1000	(1 << 8)
-#define	LED1_FD		(1 << 9)
-#define	LED1_USB3_MASK	0x03e0
-
-#define	LED2_ACTIVE	(1 << 10)
-#define	LED2_LINK_1000	(1 << 13)
-#define	LED2_LINK_100	(1 << 12)
-#define	LED2_LINK_10	(1 << 11)
-#define	LED2_FD		(1 << 14)
-#define	LED2_USB3_MASK	0x7c00
-
-#define	GMII_PHYPAGE			0x1e
-
-#define	GMII_PHY_PAGE_SELECT		0x1f
-#define	GMII_PHY_PAGE_SELECT_EXT	0x0007
-#define	GMII_PHY_PAGE_SELECT_PAGE0	0X0000
-#define	GMII_PHY_PAGE_SELECT_PAGE1	0X0001
-#define	GMII_PHY_PAGE_SELECT_PAGE2	0X0002
-#define	GMII_PHY_PAGE_SELECT_PAGE3	0X0003
-#define	GMII_PHY_PAGE_SELECT_PAGE4	0X0004
-#define	GMII_PHY_PAGE_SELECT_PAGE5	0X0005
-#define	GMII_PHY_PAGE_SELECT_PAGE6	0X0006
-/******************************************************************************/
-#define	AXGE_CONFIG_IDX		0	/* config number 1 */
-#define	AXGE_IFACE_IDX		0
-
-#define	AXGE_RXHDR_CRC_ERR                        0x80000000
-#define	AXGE_RXHDR_L4_ERR         (1 << 8)
-#define	AXGE_RXHDR_L3_ERR         (1 << 9)
-
-
-#define	AXGE_RXHDR_L4_TYPE_ICMP           2
-#define	AXGE_RXHDR_L4_TYPE_IGMP           3
-#define	AXGE_RXHDR_L4_TYPE_TCMPV6         5
-
-#define	AXGE_RXHDR_L3_TYPE_IP             1
-#define	AXGE_RXHDR_L3_TYPE_IPV6           2
-
-#define	AXGE_RXHDR_L4_TYPE_MASK                   0x1c
-#define	AXGE_RXHDR_L4_TYPE_UDP                    4
-#define	AXGE_RXHDR_L4_TYPE_TCP                    16
-#define	AXGE_RXHDR_L3CSUM_ERR                     2
-#define	AXGE_RXHDR_L4CSUM_ERR                     1
-#define	AXGE_RXHDR_CRC_ERR                        0x80000000
-#define	AXGE_RXHDR_DROP_ERR                       0x40000000
+#define	AXGE_RXHDR_L4_TYPE_MASK		0x1c
+#define	AXGE_RXHDR_L4_TYPE_UDP		4
+#define	AXGE_RXHDR_L4_TYPE_TCP		16
+#define	AXGE_RXHDR_L3CSUM_ERR		2
+#define	AXGE_RXHDR_L4CSUM_ERR		1
+#define	AXGE_RXHDR_CRC_ERR		0x80000000
+#define	AXGE_RXHDR_DROP_ERR		0x40000000
 
 struct axge_csum_hdr {
 	uint16_t cstatus;

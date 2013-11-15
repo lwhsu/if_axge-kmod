@@ -65,12 +65,8 @@ The AX88179 and AX88178A contain a 10/100/1000 Ethernet MAC with a GMII
 interface for interfacing with the Gigabit Ethernet PHY.
 .Pp
 These devices will operate with both USB 1.x and USB 2.0 controllers, and the
-AX88179 will operate with USB 3.0.
-.Pp
-All chipsets support a 64-bit multicast hash table, single perfect
-filter entry for the station address, all-multicast mode and promiscuous mode.
-Packets are
-received and transmitted over separate USB bulk transfer endpoints.
+AX88179 will operate with USB 3.0 controllers.
+Packets are received and transmitted over separate USB bulk transfer endpoints.
 .Pp
 The
 .Nm
@@ -146,5 +142,8 @@ driver was written by
 .An Kevin Lo Aq kevlo@FreeBSD.org
 and
 .An Li-Wen Hsu Aq lwhsu@FreeBSD.org .
-This manual page was written by
-.An Mark Johnston Aq markj@FreeBSD.org .
+This manual page was adapted by
+.An Mark Johnston Aq markj@FreeBSD.org
+from the
+.Xr axe 4
+manual page.

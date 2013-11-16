@@ -432,8 +432,7 @@ axge_attach_post_sub(struct usb_ether *ue)
 	ifp->if_snd.ifq_drv_maxlen = ifqmaxlen;
 	IFQ_SET_READY(&ifp->if_snd);
 
-	ifp->if_capabilities |= IFCAP_VLAN_MTU | IFCAP_VLAN_HWTAGGING;
-	ifp->if_capabilities |= IFCAP_TXCSUM | IFCAP_RXCSUM;
+	ifp->if_capabilities |= IFCAP_VLAN_MTU | IFCAP_TXCSUM | IFCAP_RXCSUM;
 	ifp->if_hwassist = AXGE_CSUM_FEATURES;
 	ifp->if_capenable = ifp->if_capabilities;
 
